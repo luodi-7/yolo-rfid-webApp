@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图像预测</title>
+    <!-- 网站图标 -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- 引入 layui.css -->
+    <link href="{{ url_for('static', filename='utils/layui/css/layui.css') }}" rel="stylesheet">
+    <!-- 引入 layui.css -->
+    <link href="{{ url_for('static', filename='css/common.css') }}" rel="stylesheet">
+    <!-- 引入 index.css -->
+    <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet">
+
+</head>
+<body>
+    <div id="main">
+        <div class="top">
+            <h1>多功能图像检测平台</h1>
+            <p>基于layui+flask实现</p>
+        </div>
+        <div class="center">
+            <div class="layui-tab layui-tab-card">
+              <ul class="layui-tab-title">
+                <li class="layui-this">图像预测</li>
+                <li>视频预测</li>
+                <li>摄像头实时检测</li>
+                <li><span style="color: red">*</span>视频检测+</li>
+                <li><span style="color: red">*</span>元+</li>
+              </ul>
+              <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-xs6">
+                            <div class="grid-demo grid-demo-bg1">
+                                <div style="width: 380px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <img class="layui-upload-img" id="ID-upload-demo-img" style="width: 100%; height: 380px;"/>
+                                    {#图片显示的文本#}
+                                    <div id="ID-upload-demo-text"></div>
+                                  </div>
+                                  {#进度条#}
+                                  <div class="layui-progress" lay-showPercent="yes" lay-filter="filter-demo">
+                                    <div class="layui-progress-bar" lay-percent=""></div>
+                                  </div>
+                                </div>
+                                {#上传按钮 上传文件按钮绑定后的元素 id="ID-upload-demo-btn"#}
+                                <button type="button" class="layui-btn" id="ID-upload-demo-btn" style="margin-top: 5px">
+                                  <i class="layui-icon layui-icon-upload"></i> 上传图片
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs6">
+                            <div class="grid-demo grid-demo-bg2">
+                                 <div style="width: 380px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <img class="layui-upload-img" id="ID-show-demo-img" style="width: 100%; height: 380px;">
+                                    {#图片显示的文本#}
+                                    <div style="margin-top: 5px">
+                                        <a id="search-result-a" style="cursor:pointer;color: #027bd5">预测结果展示</a>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom" style="text-align: center">
+                        <button class="layui-btn demo-dropdown-base layui-bg-blue">
+                          <span id="dropdown-model-text">选择模型</span>
+                          <i class="layui-icon layui-icon-down layui-font-12"></i>
+                        </button>
+                        <button class="layui-btn layui-bg-orange" id="start-predict-btn">
+                          <i class="layui-icon layui-icon-face-surprised" style="font-size: 20px; color: #1E9FFF;"></i>
+                          <span>开始预测</span>
+                        </button>
+                    </div>
+
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-xs6">
+                            <div class="grid-demo grid-demo-bg1">
+                                <div style="width: 380px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <div class="original-video" style="width: 100%; height: 380px;border: 1px #c0c0c0 solid">
+                                        <video controls autoplay class="layui-upload-img" id="originalVideo" style="width: 100%; height: 380px;">
+                                        </video>
+                                    </div>
+                                    {#图片显示的文本#}
+                                    <div id="ID-upload-video-text"></div>
+                                  </div>
+                                  {#进度条#}
+                                  <div class="layui-progress" lay-showPercent="yes" lay-filter="filter-video">
+                                    <div class="layui-progress-bar" lay-percent=""></div>
+                                  </div>
+                                </div>
+                                {#上传按钮 上传文件按钮绑定后的元素 id="ID-upload-demo-btn"#}
+                                <button type="button" id="ID-upload-video-btn" class="layui-btn demo-class-accept" lay-options="{accept: 'video'}" style="margin-top: 5px">
+                                    <i class="layui-icon layui-icon-upload"></i>
+                                    上传视频
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs6">
+                            <div class="grid-demo grid-demo-bg2">
+                                 <div style="width: 380px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <!-- 处理后的视频展示 -->
+                                    <div class="processed-video" style="width: 100%; height: 380px;border: 1px #c0c0c0 solid">
+<!--                                        <canvas id="processedCanvas" style="width: 100%; height: 380px;display: none"></canvas>-->
+                                            <video controls autoplay src="" class="layui-show-video" style="width: 100%; height: 380px;" id="processedVideo">
+<!--                                                <source src="" type="video/mp4" style="width: 100%; height: 380px;" id="processedVideo">-->
+                                            </video>
+<!--                                        <img src="data:image/jpeg;base64,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" alt="" style="width: 100px;height: 100px">-->
+<!--                                        <img id="processedImg" alt="" style="width: 100%;height: 380px">-->
+                                    </div>
+                                    <div style="margin-top: 5px">
+                                        <a id="search-result-a1" style="cursor:pointer;color: #027bd5">预测结果展示</a>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom" style="text-align: center">
+                        <button class="layui-btn demo-dropdown-base layui-bg-blue">
+                          <span id="dropdown-model-text1">选择模型</span>
+                          <i class="layui-icon layui-icon-down layui-font-12"></i>
+                        </button>
+                        <button class="layui-btn layui-bg-orange" id="start-predict-btn1">
+                          <i class="layui-icon layui-icon-face-surprised" style="font-size: 20px; color: #1E9FFF;"></i>
+                          <span>开始预测</span>
+                        </button>
+                    </div>
+
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-row layui-col-space30">
+                        <!--在这里加上左侧摄像头代码-->
+                        <div class="layui-col-xs12">
+                            <div class="grid-demo grid-demo-bg2">
+                                 <div style="width: 720px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <!-- 处理后的视频展示 -->
+                                    <div class="processed-video" style="width: 100%; height: 430px;border: 1px #c0c0c0 solid">
+<!--                                        <canvas id="processedCanvas" style="width: 100%; height: 380px;display: none"></canvas>-->
+                                            <img src="" class="layui-show-video" style="width: 100%; height: 430px;" id="processedCamera">
+<!--                                                <source src="" type="video/mp4" style="width: 100%; height: 380px;" id="processedVideo">-->
+<!--                                        <img src="data:image/jpeg;base64,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" alt="" style="width: 100px;height: 100px">-->
+<!--                                        <img id="processedImg" alt="" style="width: 100%;height: 380px">-->
+                                    </div>
+                                    <div style="margin-top: 5px">
+                                        <a id="search-result-a2" style="cursor:pointer;color: #027bd5">预测结果展示</a>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom" style="text-align: center">
+                        <button class="layui-btn layui-bg-blue" id="demo-dropdown-device">
+                          <span id="dropdown-model-camera_type">选择设备</span>
+                          <i class="layui-icon layui-icon-down layui-font-12"></i>
+                        </button>
+                        <button class="layui-btn demo-dropdown-base layui-bg-blue">
+                          <span id="dropdown-model-text2">选择模型</span>
+                          <i class="layui-icon layui-icon-down layui-font-12"></i>
+                        </button>
+                        <button class="layui-btn layui-bg-orange" id="start-predict-btn2">
+                          <i class="layui-icon layui-icon-face-surprised" style="font-size: 20px; color: #1E9FFF;"></i>
+                          <span>开始检测</span>
+                        </button>
+<!--                        <button class="layui-btn demo-class-accept" id="ID-close-camera-btn">-->
+<!--                          <i class="layui-icon layui-icon-close" style="font-size: 20px; color: #1E9FFF;"></i>-->
+<!--                          <span>关闭摄像头</span>-->
+<!--                        </button>-->
+                        <button type="button" id="ID-close-camera-btn" class="layui-btn demo-class-accept">
+                            <i class="layui-icon layui-icon-close"></i>
+                            关闭摄像头
+                        </button>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-xs6">
+                            <div class="grid-demo grid-demo-bg1">
+                                <div style="width: 380px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <div class="original-video" style="width: 100%; height: 380px;border: 1px #c0c0c0 solid">
+                                        <video autoplay class="layui-upload-img" id="originalVideo1" style="width: 100%; height: 380px;">
+                                        </video>
+                                    </div>
+                                    {#图片显示的文本#}
+                                    <div id="ID-upload-video-text1"></div>
+                                  </div>
+                                  {#进度条#}
+                                  <div class="layui-progress" lay-showPercent="yes" lay-filter="filter-video1">
+                                    <div class="layui-progress-bar" lay-percent=""></div>
+                                  </div>
+                                </div>
+                                {#上传按钮 上传文件按钮绑定后的元素 id="ID-upload-demo-btn"#}
+                                <button type="button" id="ID-upload-video-btn1" class="layui-btn demo-class-accept" lay-options="{accept: 'video'}" style="margin-top: 5px">
+                                    <i class="layui-icon layui-icon-upload"></i>
+                                    上传视频
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs6">
+                            <div class="grid-demo grid-demo-bg2">
+                                 <div style="width: 380px;margin:0 auto">
+                                  <div class="layui-upload-list">
+                                    <!-- 处理后的视频展示 -->
+                                    <div class="processed-video" style="width: 100%; height: 380px;border: 1px #c0c0c0 solid">
+<!--                                        <canvas id="processedCanvas" style="width: 100%; height: 380px;display: none"></canvas>-->
+                                            <img src="" class="layui-show-video" style="width: 100%; height: 380px;" id="processedVideo1">
+<!--                                                <source src="" type="video/mp4" style="width: 100%; height: 380px;" id="processedVideo">-->
+<!--                                        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAGQAZAMBEQACEQEDEQH/xAAbAAEBAQEBAQEBAAAAAAAAAAAEBQYDAgcBAP/EADYQAAIBAwIFAwIEBAYDAAAAAAECAwAEEQUhBhIxQVETFCJhcTJSkcGhsdHwM0JTYoGyFSMk/8QAGgEAAgMBAQAAAAAAAAAAAAAAAgMAAQQFBv/EAC8RAAICAQMEAQICCwAAAAAAAAABAhEDBBIhEzFBUSIFYRSxFSMyM0JxgcHR8PH/2gAMAwEAAhEDEQA/AMJFHmuedsVFDntQtlWVI9JuPaC69JvQzjnxtmgcy9rP5Lf6ULkAIS1yM8u1A5FWNGlOLH3fx9Pn5MZGc/ag6nNEvmgvoDxRbizw1uPFXuIcJLf6UakFYaW3+lEpFoHLDjtRphoJLHjtVhoOV36VAynCnSqbMrGwx0tyBLEd/dex9kZW9vzc3p9s+aWw93nye7C2FxdxRfncA1S5dCpOkfRbC9t7Qrai2h9v+HlKA5+9bouK4MMoSfysicZ6NFYXEVzZLy2twPwjord6y6nEovcuzH6fI5Kmc+HOFm1NPc3TmG1HQjq/2qsOFzVvsXlz7XtXcq6lwXZSWssmmTymaNSfTcghv4U2WnjXxYEc8k/kjBSRYyCMGsikawske1MUgkCmipiYaJ88eM0xBg2XeoFZVgSgkzKPhSlMgqNaBshS0giPULdj+cVIP5IGXYvX03oSb7b1sfAuCtUXdRT/AMlwtGM5ZZo8H7nH70WWO+Bmg+nkY+/mjsLKK1h+KhQFA8VcmoqkTDBzbkzxosjB3kcnkCkmqT8jMi4o+bzxmWaQxrsWJwPFc1yVmtLgFKmKJMNCdI0ldTuDE08cPxJ5pGwNqbFjLUY7mrIWqWwgndFIYA4zTIuw5KmR3X5UZRWgWltmYdGNqU2QQgoGWkIjyCCNiN6Gy2i7rCm90j3cG7quWA+nWtye+FoTilsyUy/w7N63C1u/Xnki/wCw/pT4fsoyalVlkj81AS3/ABI9rECUgVeb7nes8rlko24tuPTKT8nfiC5TSdLNrC3/ANE45dj0Hc1WeeyNIRjTnK2YeOaW3YtExUkEE/Q1z2r7mygUu5JpiLDszJuhIo4sOMmifdZYktTUy7smyL8qYmQpwilszjI+lLZBCUsJCoI3lcJGpZm2AHU1FyU2kuTa8P6HNbRN76VAkg/whuRXQwYpQXyOfmzqT+Je0vTrCxsIrKEMYYmDLzHfIOa0pJCJTlKVsfBaWqTzXESBZZiC7eSAB/IVWyPdBdSTST8GM4n0K/jlkvWk91EerAbr9x4rn6jTzT3d0bcGaL+PYyrisZqDSCiRYWWjRYKdetNTCRPkX5UxEKENLYgoWdtLcvyQxs7AE4UZ2pUpJdyHpVKnBqgka/hq0W2t/dyL/wC2QfD/AGrW3TwSW5mLUTcntQ+61JYFLyOFUdya0uVCI4mzxp2uQ3bEQShiPBqbmXLFtNDa3RK9arcCo2dLLWbS6meBZUZh8WGc1SyeA5YWlZieLtKGm6gTCMQTfJPp5Fc/U4unPjszZp8m+NPujOHAO42rOaTjetE8hMKFE7KTmijfkiROmpyZaASD5GmFjougoGIHWs8tuxaGRkYjGQcbUqST7kFWMLXV1HEP87bnxUiraRcnSs3QCKqoNlUAAfSupHhHMfLB63oNtrGnvBFfG2mYEBsZHT+/0q9yTHY4TfYlcLcES8PtLd3+sRzQqrHkijJPbuft0ot0WrAmpXto0ltewOt1G99GsTIFhaKM86FhjJ33wd+gpdpsZKFQVLnzzx+RG4R4Du9DnEl3ra3MQOV5UOW2756du5o24vuAptqkjVcW2IvtEZ4vlJb/ADX6jv8A39KTqIb8fHgmGWzJz5PmMtctHTCSUSIgcvemIsE4+RphLFxVTEikNKZZa4cKi+ycZ5DijxNbwMquJoZJjnY1u3mbpngS5O9RyTGQcodhKXoSMqzfEjvUv0A027ZLi4qsGVlHOIwT8iBjHmldXnsdP9FZdu60U7Hi7SZGEQu15t/jg52xn+Y/UVHOlyhC0OS6jTf8zUWl9bXFhJIjo0JRsnO3TeijkTRizYZwlUlyfNLJLSS/C3TlIObcgZwK5Uu5td1wT9VEK3DC2JMYPxJ7ijg/YSJUvenIII/4qYCJioWLEJS2WhUEjRSK6HDKcg0N0WaC0v0uwFI5ZsdOxpsJt8AtUdmjlY4VgK1QhfcVOe0/rrQdVuLdjZSRTEj8HNyt/HanbUhPWvuYZoZbO3mhvI2ikiBEqON1x1zWP+OkexjOL0+7xRP0OKGGaTEySS/IKFH4VDb743ycdMDYYFO1EpNLjgxfToYoTdSuX9r55/4vSN/FPfwcPKiwyJayuS0vKQG6YGfFYZ7or7GTX9OWfh8kaQ0pGYLIfNGiBJTTESwrn5UZQqKqYssWL2Is5vcK5nwPSKkYB75pEt18E5DDrtVhFfQUzcO/5E/nTcEbkBllUSk8wVsNtW52jOql3GWurxWQ9SWdUjXckmlPJLwhqwJmM4o1iHV9QutQgQiExhRnALgDGd6XFOU+T0Wnx/h9I4t+2ZzSY0VJ44/X5mBwXxgAMRgDJ753PWnaht02L+nKKckr/r9m1S59933Z9T0zWFm4PuReLyepCY0Qnq/QY/53rNPUWnBnJ1OjeHMqdmRk61lRYaSjRAsvejRQRutMKKMdu3iluQNCEgbxQuRZ3S3bxQ2WW9Jh9C3dyfk56eAK2aVKrM2d+Dq4DHetZnpk3WIV9jMQu/KaFtDsadoyEbQpYr7hVZRjCtjc9utZoqTl8T1mXpxx/rFa/wB9nPRZLMtywxIJgGfmBUnDNkjI32yO3imahT7t8GX6fLA3UV8uXfHl9uPXHg1kcbSQR43AG1c2bqRm1375nh7d/FUpIx0Gkt28UW5EDSWzeKJSRQdrVs9KNTKNalingVheVh7RCWKfSheVl7Tutin0oXlZe06raKFIUimYdQ8ctwE8SkiVcTtbylJQQRXdhKOSO6Jicdrpn57iGZSjkEHqDWfLuSNeGjhDw1pNwhjLyBHGCquCMeMEGsX4jJB2jqy1M5wcXXP2GxcC6ZaxYtbi9BY5KtICF+3x7/tQ59dKVdrM2n1M8DailRUt9HSCBYkyQo6sck1hlmcnYOXI8k90j02ljwKrqsXwcX0oflFF1iUg8mlD8tF1ibQ7aUM9KLrFbQokf85FOSXoXZ5aSX/Vf9aJRXols8NJN2nk/UVe2Pols8Ga4HS5l/Uf0qbY+iW/Z5kMshUyTu+OgYKf2o8eV4bcEU8ayL5HqFJEJ9O4kQMckBU/daXlzPI90l+f+R2PEoqkdtP09YJxOk85fmzuRj9MUGTVzcapDI4IpmliuJZDzO+567YrBKbk7YfTjFUhKOx6mqFtI98xxUKo/GY1CHF2NREDk70aIf/Z" alt="" style="width: 100px;height: 100px">-->
+<!--                                        <img id="processedImg" alt="" style="width: 100%;height: 380px">-->
+                                    </div>
+                                    <div style="margin-top: 5px">
+                                        <a id="search-result-a3" style="cursor:pointer;color: #027bd5">预测结果展示</a>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom" style="text-align: center">
+                        <button class="layui-btn demo-dropdown-base layui-bg-blue">
+                          <span id="dropdown-model-text3">选择模型</span>
+                          <i class="layui-icon layui-icon-down layui-font-12"></i>
+                        </button>
+                        <button class="layui-btn layui-bg-orange" id="start-predict-btn3">
+                          <i class="layui-icon layui-icon-face-surprised" style="font-size: 20px; color: #1E9FFF;"></i>
+                          <span>开始预测</span>
+                        </button>
+                    </div>
+
+                </div>
+              </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+    <!-- 引入 layui.js -->
+    <script src="{{ url_for('static', filename='utils/layui/layui.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='utils/js/axios.js') }}"></script>
+</body>
+</html>
